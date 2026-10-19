@@ -6,6 +6,7 @@ PF_HOST = '127.0.0.1'
 PF_PORT = 5001
 
 def run_ground():
+    # Try to connect to the platform
     print("[GROUND] Connecting with Platform OBC...")
     gnd_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -18,15 +19,17 @@ def run_ground():
 
     print("Write command:")
 
+    # Command loop for Ground =====================================================
     while True:
         # Ask for input from User.
         cmd = input("Ground-MCS> ")
         if not cmd:
             continue
 
-        # Send command
+        # Send command.
         gnd_socket.send(cmd.encode('utf-8'))
 
+        # Shut down the telecommunication.
         if cmd.lower() == 'exit':
             print("[GROUND] Shutting down...")
             break

@@ -1,12 +1,14 @@
 import socket
 import time
 
+
 PF_HOST = '127.0.0.1'
 PF_PORT = 5001
 PL_PORT = 5002
 
 def run_platform():
-    # Try to connect to the payload (the payload must already be turned ON).
+    # Telemetry Setup ==================================================================
+    # Try to connect to the payload (the payload must already be turned ON)
     print("[PLATFORM] Connecting to Payload...")
     pl_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     while True:
@@ -27,33 +29,84 @@ def run_platform():
     gnd_conn, gnd_addr = pf_server.accept()
     print(f"[PLATFORM] Connected to Ground MCS via {gnd_addr}")
 
+    # Command loop for Platform=============================================================
+    current_mode = "SAFE"
+    payload_power = "OFF"
+
+    print(f"[PLATFORM] Initial Status: Modus = {current_mode}, Payload = {payload_power}")
+
+    # Run through command loop =============================================================
     while True:
-        # Receive commands from ground
-        command = gnd_conn.recv(1024).decode('utf-8')
-        if not command or command.lower() == 'exit':
-            print("[PLATFORM] Connection to Ground closed.")
-            # Close the payload connection
-            pl_socket.send("exit".encode('utf-8'))
+        print(f"\n[PLATFORM] Status: [{current_mode}] | Payload: [{payload_power}] | Waiting for ground...")
+
+        # Reconnect when interrupted =======================================================
+        try:
+            command=gnd_conn.recv(1024).decode('utf-8').strip()
+            if not command:
+                print("[PLATFORM] Lost connection with Ground. Waiting for reconnection...")
+                gnd_conn, gnd_addr = pf_server.accept() # Wait for new connection to ground.
+                continue
+        except (ConnectionResetError, ConnectionAbortedError):
+            print("[PLATFORM] Connection abruptly cut off! Waiting for reconnection...")
+            gnd_conn, gnd_addr = pf_server.accept() # Wait for new connection to ground.
+            continue
+
+        # Shut Down system if exit is requested.
+        if command.lower() == 'exit':
+            print("[PLATFORM] Shutdwon signal received. Shutting Down...")
+            pl_socket.sendall("exit".encode('utf-8'))
             break
 
-    print(f"[PLATFORM] Reveived from Ground: '{command}'")
+        print(f"[PLATFORM] Received from Ground -> '{command}'")
 
-    # Send Payload commands directly to Payload.
-    if "PAYLOAD" in command or "IMAGE" in command:
-        print(f"[PLATFORM] Send commando to Payload...")
-        pl_socket.send(command.encode('utf-8'))
+        # Swap-MODE Logic ===================================================================
+        if "SET-MODE" in command:
+            new_mode = command.replace("SET-MODE ", "").upper()
 
-        # Wait for an answer from Payload.
-        pl_reply = pl_socket.recv(1024).decode('utf-8')
-        print(f"[PLATFORM] Telemetry received from Payload: {pl_reply}")
+            if new_mode in ["SAFE", "TARGET"]:
+                print(f"[PLATFORM] Mode switch to {new_mode} initialized... (Duration of 3 seconds)")
+                time.sleep(3)
 
-        # Send telemetry to Ground
-        gnd_conn.send(f"PF_TM: Forwarding -> {pl_reply}".encode('utf-8'))
-    else:
-        # Platform sends command itself (mode-switch).
-        reply = f"PF_TM: ACK - Platform processed {command}"
-        gnd_conn.send(reply.encode('utf-8'))
+                current_mode = new_mode
 
+                # Automatic shutdown of payload while switching to SAFE
+                if current_mode == "SAFE" and payload_power == "ON":
+                    payload_power = "OFF"
+                    print(f"[PLATFORM] EVENT: Satellite switched to SAFE! -> Automatic shutdown of Payload.")
+                    pl_socket.sendall("SET-POWER OFF".encode('utf-8'))
+                    try: pl_socket.recv(1024) # Ignore response
+                    except: pass
+
+                reply = f"PF_TM: EVENT - Mode succesfully switched to {current_mode}"
+            else:
+                reply = f"PF_TM: REJECT - Unknown mode '{new_mode}'"
+
+            gnd_conn.sendall(reply.encode('utf-8'))
+
+        # Commands for PAYLOAD ================================================================
+        elif "PAYLOAD" in command:
+            # Reject any command when SAFE-MODE is active.
+            if current_mode == "SAFE":
+                reply = "PF_TM: REJECT - Payload command rejected. Current mode = SAFE"
+                gnd_conn.sendall(reply.encode('utf-8'))
+                continue
+
+            # When mode is not SAFE we continue with the payload commands.
+            if "POWER-ON" in command:
+                payload_power = "ON"
+            elif "POWER-OFF" in command:
+                payload_power = "OFF"
+
+            pl_socket.sendall(command.encode('utf-8'))
+            pl_reply = pl_socket.recv(1024).decode('utf-8')
+            gnd_conn.sendall(f"PF_TM: Forwarding -> {pl_reply}".encode('utf-8'))
+
+        else:
+            reply = f"PF_TM: REJECT - Unknown command '{command}'"
+            gnd_conn.sendall(reply.encode('utf-8'))
+
+
+    print("[PLATFORM] Server shutting down...")
     gnd_conn.close()
     pf_server.close()
     pl_socket.close()
