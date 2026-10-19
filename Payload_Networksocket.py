@@ -13,29 +13,53 @@ def run_payload():
     print(f"[PAYLOAD] Started, listening on port {PL_PORT}...")
 
     conn, addr = server.accept()
-    print(f"[PAYLOAD] Connected to Platform OBC via {addr}")
+    print(f"[PAYLOAD] Connected to Platform OBC via {addr}.")
     
     # Command loop for Payload =============================================================
+    payload_status = "OFF"
+    print(f"[PAYLOAD] Initial status: {payload_status}")
+
     while True:
-        # Receive command from networksocket
-        command = conn.recv(1024).decode('utf-8')
-        if not command or command.lower() == 'exit':
+        command = conn.recv(1024).decode('utf-8').strip()
+        if not command or command.lower() == "exit":
             print("[PAYLOAD] Connection lost.")
             break
 
-        print(f"[PAYLOAD] Command received from Platform: {command}")
+        print(f"[PAYLOAD] Command received: '{command}'")
 
-        # Processing data
+        # Command to power ON the payload.
+        if "POWER-ON" in command:
+            payload_status = "ON"
+            reply = "PL_TM: STATUS - Payload is now POWERED-ON\n"
+            print("[PAYLOAD] Status modified to POWERED-ON.")
 
-        # Initiate Image
-        if "TAKE-IMAGE" in command:
-            reply = "PL_TM: IMAGE_START"
-        
-        # If unknown Command
+        # Command to power OFF the payload.
+        elif "POWER-OFF" in command:
+            payload_status = "OFF"
+            reply = "PL_TM: STATUS - Payload is now POWERED-OFF\n"
+            print("[PAYLOAD] Status modified to POWERED-OFF.")
+
+        # Command to take the IMAGE.
+        elif "TAKE-IMAGE" in command:
+            if payload_status == "OFF":
+                reply = "PL_TM: REJECT - Cannot take image. Payload is POWERED-OFF!\n"
+                print("[PAYLOAD] FAILURE: Image rejected, Payload is powered off.")
+            else:
+                reply = "PL_TM: ACK - Image capture started...\n"
+                print("[PAYLOAD] Image capture accepted...")
+
+        # Automatic POWER OFF while switching to SAFE mode.
+        elif "SET-POWER OFF" in command:
+            payload_status = "OFF"
+            reply = "PL_TM: STATUS - Emergency shutdown completed due to active SAFE mode\n"
+            print("[PAYLOAD] Emergency stop received! Status is OFF!")
+
+        # When command is unknown.
         else:
-            reply = f"PL_TM: ACK {command} rejected! {command} is not a valid command!"
+            reply = f"PL_TM: REJECT - Unknown Payload command '{command}'\n"
 
         conn.sendall(reply.encode('utf-8'))
+
 
     conn.close()
     server.close()
