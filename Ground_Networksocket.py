@@ -1,9 +1,10 @@
 import socket
 from datetime import datetime
 
-logFilePath = "logfile.txt"
+logFilePath = "Logfile.txt"
 PF_HOST = '127.0.0.1'
 PF_PORT = 5001
+
 def printToLogFile(string):
     with open(logFilePath,"a") as fid:
             print(string, file=fid)
@@ -11,7 +12,8 @@ def printToLogFile(string):
 def run_ground():
     
     # Clear log file at startup
-    with open(logFilePath, "r+") as fid:
+    
+    with open(logFilePath, "w+") as fid:
         fid.seek(0)
         fid.truncate()
 
@@ -72,6 +74,12 @@ def run_ground():
                         print(str)
                         printToLogFile(str)
                         printed_lines.add(clean_line)
+
+                if "INIT" in buffer:
+                    if "EVENT" in buffer:
+                        break
+                    else:
+                        continue
 
                 if any(x in buffer for x in ["EVENT", "REJECT", "STATUS", "Forwarding"]):
                     break

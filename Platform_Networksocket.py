@@ -116,15 +116,25 @@ def run_platform():
             elif "POWER-OFF" in command:
                 payload_power = "OFF"
 
+            # Forward command to payload.
+            print("[PLATFORM] Forwarding command to Payload...")
             pl_socket.sendall(command.encode('utf-8'))
-            pl_reply = pl_socket.recv(1024).decode('utf-8')
-            gnd_conn.sendall(f"PF_TM: Forwarding -> {pl_reply}".encode('utf-8'))
 
-        else:
-            reply = f"PF_TM: REJECT - Unknown command '{command}'\n"
-            gnd_conn.sendall(reply.encode('utf-8'))
+            while True:
+                pl_reply = pl_socket.recv(1024).decode('utf-8').strip()
+                if not pl_reply:
+                    break
 
-        continue
+                gnd_conn.sendall(f"PF_TM: Forwarding -> {pl_reply}\n".encode('utf-8'))
+                print(f"[PLATFORM] Forwarded to ground: {pl_reply}")
+
+                if "EVENT" in pl_reply:
+                    break
+                elif "INIT" in pl_reply:
+                    continue
+                else:
+                    break
+            continue
 
     # Shut down server ======================================================================
     print("[PLATFORM] Server shutting down...")

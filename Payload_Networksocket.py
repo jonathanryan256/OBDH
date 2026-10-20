@@ -59,8 +59,12 @@ def run_payload():
                     logfile.write(f"[{now}] Image successfully captured and stored in Mass Memory Unit.\n")
 
                 print("[PAYLOAD] Image successfully captured and saved in Image_Log.txt!")
+
+                time.sleep(0.1)
+                
                 reply = "PL_TM: EVENT - Image capture FINISHED, data logged successfully (duration is 5 seconds)\n"
                 conn.sendall(reply.encode("utf-8"))
+                continue
 
         # Automatic POWER OFF while switching to SAFE mode.
         elif "SET-POWER OFF" in command:
