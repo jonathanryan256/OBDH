@@ -1,20 +1,33 @@
 import socket
 from datetime import datetime
 
-
+logFilePath = "logfile.txt"
 PF_HOST = '127.0.0.1'
 PF_PORT = 5001
+def printToLogFile(string):
+    with open(logFilePath,"a") as fid:
+            print(string, file=fid)
 
 def run_ground():
+    
+    # Clear log file at startup
+    with open(logFilePath, "r+") as fid:
+        fid.seek(0)
+        fid.truncate()
+
     # Try to connect to the platform
     print("[GROUND] Connecting with Platform OBC...")
     gnd_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
         gnd_socket.connect((PF_HOST, PF_PORT))
-        print("[GROUND] Successfully connected to satellite!")
+        str = "[GROUND] Successfully connected to satellite!"
+        print(str)
+        printToLogFile(str)
     except ConnectionRefusedError:
-        print("[GROUND] ERROR: Platform OBC is not running.")
+        str = "[GROUND] ERROR: Platform OBC is not running."
+        print(str)
+        printToLogFile(str)
         return
 
     print("Write command:")
@@ -33,7 +46,9 @@ def run_ground():
 
         # Shut down the telecommunication.
         if cmd.lower() == 'exit':
-            print("[GROUND] Shutting down...")
+            str = "[GROUND] Shutting down..."
+            print(str)
+            printToLogFile(str)
             break
 
         buffer = ""
@@ -53,7 +68,9 @@ def run_ground():
 
                     if clean_line and clean_line not in printed_lines:
                         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                        print(f"[{timestamp}] RECEIVED TM: {line.strip()}")
+                        str = f"[{timestamp}] RECEIVED TM: {line.strip()}"
+                        print(str)
+                        printToLogFile(str)
                         printed_lines.add(clean_line)
 
                 if any(x in buffer for x in ["EVENT", "REJECT", "STATUS", "Forwarding"]):
