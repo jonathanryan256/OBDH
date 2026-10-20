@@ -1,4 +1,6 @@
 import socket
+import time
+from datetime import datetime
 
 
 PL_HOST = '127.0.0.1'
@@ -45,8 +47,20 @@ def run_payload():
                 reply = "PL_TM: REJECT - Cannot take image. Payload is POWERED-OFF!\n"
                 print("[PAYLOAD] FAILURE: Image rejected, Payload is powered off.")
             else:
-                reply = "PL_TM: ACK - Image capture started...\n"
+                reply = "PL_TM: INIT - Image capture initialized...\n"
                 print("[PAYLOAD] Image capture accepted...")
+                conn.sendall(reply.encode('utf-8'))
+
+                time.sleep(5)
+
+                now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                with open("Image_Log.txt", "a") as logfile:
+                    logfile.write(f"[{now}] Image successfully captured and stored in Mass Memory Unit.\n")
+
+                print("[PAYLOAD] Image successfully captured and saved in Image_Log.txt!")
+                reply = "PL_TM: EVENT - Image capture FINISHED, data logged successfully (duration is 5 seconds)\n"
+                conn.sendall(reply.encode("utf-8"))
 
         # Automatic POWER OFF while switching to SAFE mode.
         elif "SET-POWER OFF" in command:
