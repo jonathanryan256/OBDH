@@ -6,6 +6,10 @@ logFilePath = "Logfile.txt"
 PF_HOST = '127.0.0.1'
 PF_PORT = 5001
 
+def generateTimeFromhhmmss(hour,minute,second): #For scheduling commands
+    t = time.localtime()
+    return time.mktime(time.struct_time((t.tm_year,t.tm_mon,t.tm_mday,int(hour),int(minute),int(second),0,0,0)))
+
 def printToLogFile(string):
     with open(logFilePath,"a") as fid:
             print(string, file=fid)
@@ -45,9 +49,16 @@ def run_ground():
             continue
         if cmd == "SET_TIME": #Current time needs to be sent to Platform
             cmd = cmd+str(time.mktime(time.localtime()))
+        if cmd == "SCHEDULE_COMMAND":
+            scheduledCommand = input("Enter command to be Scheduled: ").strip()
+            scheduledTime = input("Enter scheduled time in hh.mm.ss: ").strip()
+            [hh,mm,ss] = scheduledTime.split(".")
+            trgtTime = generateTimeFromhhmmss(hh,mm,ss) #converts time to time since epoch
+            cmd = cmd + "," +  scheduledCommand + "," + str(trgtTime)
+
         # Send command to platform.
         gnd_socket.send(cmd.encode('utf-8'))
-
+        
         # Shut down the telecommunication.
         if cmd.lower() == 'exit':
             printStr= "[GROUND] Shutting down..."

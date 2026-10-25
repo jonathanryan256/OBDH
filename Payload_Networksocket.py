@@ -28,7 +28,6 @@ def run_payload():
             break
 
         print(f"[PAYLOAD] Command received: '{command}'")
-
         # Command to power ON the payload.
         if "POWER-ON" in command:
             payload_status = "ON"
