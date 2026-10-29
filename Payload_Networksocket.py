@@ -7,6 +7,11 @@ PL_HOST = '127.0.0.1'
 PL_PORT = 5002
 
 def run_payload():
+    # Refresh the Image_Log file ===========================================================
+    with open("Image_Log.txt", "w") as logfile:
+        logfile.write(f"--- NEW IMAGE LOG STARTED [{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] ---\n")
+        print("[PAYLOAD] Image_Log.txt has been cleaned and refreshed.")
+
     # Telemetry Setup ======================================================================
     # Start the server for the platform to connect to.
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

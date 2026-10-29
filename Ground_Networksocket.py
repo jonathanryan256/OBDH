@@ -12,7 +12,6 @@ def printToLogFile(string):
 def run_ground():
     
     # Clear log file at startup
-    
     with open(logFilePath, "w+") as fid:
         fid.seek(0)
         fid.truncate()
@@ -32,7 +31,7 @@ def run_ground():
         printToLogFile(str)
         return
 
-    print("Write command:")
+    print("Write command:\n")
 
 
 
