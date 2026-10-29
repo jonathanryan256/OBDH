@@ -1,9 +1,14 @@
 import socket
 from datetime import datetime
+import time
 
 logFilePath = "Logfile.txt"
 PF_HOST = '127.0.0.1'
 PF_PORT = 5001
+
+def generateTimeFromhhmmss(hour,minute,second): #For scheduling commands
+    t = time.localtime()
+    return time.mktime(time.struct_time((t.tm_year,t.tm_mon,t.tm_mday,int(hour),int(minute),int(second),0,0,0)))
 
 def printToLogFile(string):
     with open(logFilePath,"a") as fid:
@@ -22,13 +27,13 @@ def run_ground():
 
     try:
         gnd_socket.connect((PF_HOST, PF_PORT))
-        str = "[GROUND] Successfully connected to satellite!"
-        print(str)
-        printToLogFile(str)
+        printStr= "[GROUND] Successfully connected to satellite!"
+        print(printStr)
+        printToLogFile(printStr)
     except ConnectionRefusedError:
-        str = "[GROUND] ERROR: Platform OBC is not running."
-        print(str)
-        printToLogFile(str)
+        printStr= "[GROUND] ERROR: Platform OBC is not running."
+        print(printStr)
+        printToLogFile(printStr)
         return
 
     print("Write command:\n")
@@ -41,15 +46,23 @@ def run_ground():
         cmd = input("Ground-MCS> ").strip()
         if not cmd:
             continue
+        if cmd == "SET_TIME": #Current time needs to be sent to Platform
+            cmd = cmd+str(time.mktime(time.localtime()))
+        if cmd == "SCHEDULE_COMMAND":
+            scheduledCommand = input("Enter command to be Scheduled: ").strip()
+            scheduledTime = input("Enter scheduled time in hh.mm.ss: ").strip()
+            [hh,mm,ss] = scheduledTime.split(".")
+            trgtTime = generateTimeFromhhmmss(hh,mm,ss) #converts time to time since epoch
+            cmd = cmd + "," +  scheduledCommand + "," + str(trgtTime)
 
         # Send command to platform.
         gnd_socket.send(cmd.encode('utf-8'))
-
+        
         # Shut down the telecommunication.
         if cmd.lower() == 'exit':
-            str = "[GROUND] Shutting down..."
-            print(str)
-            printToLogFile(str)
+            printStr= "[GROUND] Shutting down..."
+            print(printStr)
+            printToLogFile(printStr)
             break
 
         buffer = ""
@@ -69,9 +82,9 @@ def run_ground():
 
                     if clean_line and clean_line not in printed_lines:
                         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                        str = f"[{timestamp}] RECEIVED TM: {line.strip()}"
-                        print(str)
-                        printToLogFile(str)
+                        printStr= f"[{timestamp}] RECEIVED TM: {line.strip()}"
+                        print(printStr)
+                        printToLogFile(printStr)
                         printed_lines.add(clean_line)
 
                 if "INIT" in buffer:
