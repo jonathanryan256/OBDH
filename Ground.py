@@ -82,7 +82,7 @@ def run_ground():
             continue
         if cmd == "SET_TIME":
             timeSet = True
-        if cmd not in commandList:
+        if cmd.lower() not in commandList:
               print(f"PF_TIM: REJECT - Unknown command: '{cmd}'. Nothing processed.\n")
  
         if cmd == "SET_TIME": #Current time needs to be sent to Platform
