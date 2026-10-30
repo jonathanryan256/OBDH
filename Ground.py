@@ -74,23 +74,28 @@ def run_ground():
     TM_thread.start()
 
     print("Write Command:\n")
-
+    timeSet = False
     # MAIN Loop =========================================================================
     while True:
         cmd = input("Ground-MCS> ").strip()
         if not cmd:
             continue
+        if cmd == "SET_TIME":
+            timeSet = True
         if cmd not in commandList:
-             reply = f"PF_TIM: REJECT - Unknown command: '{cmd}'. Nothing processed.\n"
+              print(f"PF_TIM: REJECT - Unknown command: '{cmd}'. Nothing processed.\n")
  
         if cmd == "SET_TIME": #Current time needs to be sent to Platform
             cmd = cmd+str(time.mktime(time.localtime()))
         if cmd == "SCHEDULE_COMMAND":
-            scheduledCommand = input("Enter command to be Scheduled: ").strip()
-            scheduledTime = input("Enter scheduled time in hh.mm.ss: ").strip()
-            [hh,mm,ss] = scheduledTime.split(".")
-            trgtTime = generateTimeFromhhmmss(hh,mm,ss) #converts time to time since epoch
-            cmd = cmd + "," +  scheduledCommand + "," + str(trgtTime)
+            if timeSet:
+                scheduledCommand = input("Enter command to be Scheduled: ").strip()
+                scheduledTime = input("Enter scheduled time in hh:mm:ss: ").strip()
+                [hh,mm,ss] = scheduledTime.split(":")
+                trgtTime = generateTimeFromhhmmss(hh,mm,ss) #converts time to time since epoch
+                cmd = cmd + "," +  scheduledCommand + "," + str(trgtTime)
+            else:
+                print("TIME IS NOT SET YET, SET TIME BEFORE SCHEDULING")
         full_cmd = f"{cmd}\n"
 
         try:

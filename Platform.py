@@ -181,7 +181,7 @@ def run_platform():
             else:
                 print("time is not set, cannont schedule")
         # Swap-MODE Logic ===================================================================
-        if "SET-MODE" in command or "SET-MODE" in scheduleCommandString:
+        if "SET-MODE" == command or "SET-MODE" in scheduleCommandString:
             if "SET-MODE" in command:
                 new_mode = command.replace("SET-MODE ", "").upper()
             elif "SET-MODE" in scheduleCommandString:
@@ -215,15 +215,13 @@ def run_platform():
                     reply = f"PF_TM: EVENT - Mode succesfully switched to {current_mode}\n"
                     gnd_conn.sendall(reply.encode('utf-8'))
                     continue
-            else:
-                reply = f"PF_TM: REJECT - Unknown mode '{new_mode}'\n"
-                gnd_conn.sendall(reply.encode('utf-8'))
+            
 
             continue
             
 
         # Commands for PAYLOAD ================================================================
-        if "PAYLOAD" in command or "PAYLOAD" in scheduleCommandString:
+        if ("PAYLOAD" in command and "SCHEDULE_COMMAND" not in command) or "PAYLOAD" in scheduleCommandString:
 
             # Reject any command when SAFE-MODE is active.
             if current_mode == "SAFE":
