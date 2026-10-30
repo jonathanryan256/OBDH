@@ -83,7 +83,7 @@ def run_ground():
             continue
         if cmd == "SET_TIME":
             timeSet = True
-        if cmd.lower() not in commandList:
+        if cmd not in commandList:
             print(f"[GROUND] PF_TIM: REJECT - Unknown command: '{cmd}'. Nothing processed.\n")
             Send = False
         if cmd == "SET_TIME": #Current time needs to be sent to Platform
@@ -91,7 +91,7 @@ def run_ground():
         if cmd == "SCHEDULE_COMMAND":
             if timeSet:
                 scheduledCommand = input("[GROUND] Enter command to be Scheduled: ").strip()
-                if scheduledCommand.lower() in commandList:
+                if scheduledCommand in commandList:
                     scheduledTime = input("[GROUND] Please enter scheduled time in (HH:MM:SS): ").strip()
                     [hh,mm,ss] = scheduledTime.split(":")
                     try:
