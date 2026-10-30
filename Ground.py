@@ -93,15 +93,19 @@ def run_ground():
                 scheduledCommand = input("Enter command to be Scheduled: ").strip()
                 scheduledTime = input("Enter scheduled time in hh:mm:ss: ").strip()
                 [hh,mm,ss] = scheduledTime.split(":")
-                trgtTime = generateTimeFromhhmmss(hh,mm,ss) #converts time to time since epoch
-                cmd = cmd + "," +  scheduledCommand + "," + str(trgtTime)
+                try:
+                    trgtTime = generateTimeFromhhmmss(hh,mm,ss) #converts time to time since epoch
+                    cmd = cmd + "," +  scheduledCommand + "," + str(trgtTime)
+                except:
+                    Send = False
+                    print("TIME INPUTTED INCORRECTLY")
             else:
                 print("TIME IS NOT SET YET, SET TIME BEFORE SCHEDULING")
                 Send = False
         full_cmd = f"{cmd}\n"
 
         try:
-            if Send:
+            if Send and cmd !="":
                 gnd_socket.sendall(full_cmd.encode('utf-8'))
             else:
                 pass
