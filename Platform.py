@@ -156,7 +156,7 @@ def run_platform():
         # =====================================================================================
         # COMMANDS PROCESSING
         # =====================================================================================
-        print(scheduleCommandString, " is the current scheduleCommandString")
+        #print(scheduleCommandString, " is the current scheduleCommandString")
         # Show MODE ===========================================================================
         if command[0:8] == "SET_TIME":
             localTime = float(command[8:])
