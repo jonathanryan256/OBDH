@@ -53,7 +53,7 @@ def recv_TM_thread(gnd_socket):
         print(f"\n[GROUND] Error in receiving thread: {e}")
 
 def run_ground():
-    commandList = ["exit","payload take-image","set mode safe","set mode target","payload power-on","payload power-off","set_time","schedule_command","report_mode"]
+    commandList = ["EXIT","PAYLOAD TAKE-IMAGE","SET MODE SAFE","SET MODE TARGET","PAYLOAD POWER-ON","PAYLOAD POWER-OFF","SET_TIME","SCHEDULE_COMMAND","REPORT_MODE"]
     print("[GROUND] Connecting to Platform OBC...")
     gnd_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -73,7 +73,7 @@ def run_ground():
     TM_thread = threading.Thread(target=recv_TM_thread, args=(gnd_socket,), daemon=True)
     TM_thread.start()
 
-    print("Write Command:\n")
+    print("\n[GROUND] Write Command: \n")
     timeSet = False
     # MAIN Loop =========================================================================
     while True:
@@ -84,27 +84,27 @@ def run_ground():
         if cmd == "SET_TIME":
             timeSet = True
         if cmd.lower() not in commandList:
-            print(f"PF_TIM: REJECT - Unknown command: '{cmd}'. Nothing processed.\n")
+            print(f"[GROUND] PF_TIM: REJECT - Unknown command: '{cmd}'. Nothing processed.\n")
             Send = False
         if cmd == "SET_TIME": #Current time needs to be sent to Platform
             cmd = cmd+str(time.mktime(time.localtime()))
         if cmd == "SCHEDULE_COMMAND":
             if timeSet:
-                scheduledCommand = input("Enter command to be Scheduled: ").strip()
+                scheduledCommand = input("[GROUND] Enter command to be Scheduled: ").strip()
                 if scheduledCommand.lower() in commandList:
-                    scheduledTime = input("Enter scheduled time in hh:mm:ss: ").strip()
+                    scheduledTime = input("[GROUND] Please enter scheduled time in (HH:MM:SS): ").strip()
                     [hh,mm,ss] = scheduledTime.split(":")
                     try:
                         trgtTime = generateTimeFromhhmmss(hh,mm,ss) #converts time to time since epoch
                         cmd = cmd + "," +  scheduledCommand + "," + str(trgtTime)
                     except:
                         Send = False
-                        print("TIME INPUTTED INCORRECTLY")
+                        print("[GROUND] Rejected, Time input is incorrect!")
                 else:
-                    print("INVALID COMMAND")
+                    print("[GROUND] Rejected, Invalid command!")
                     Send = False
             else:
-                print("TIME IS NOT SET YET, SET TIME BEFORE SCHEDULING")
+                print("[GROUND] True time is not set, please set the time first using the command: 'SET_TIME'")
                 Send = False
         full_cmd = f"{cmd}\n"
 
