@@ -100,7 +100,7 @@ def run_platform():
                     processStatus[i]=0
                     processTime[i]=0
                     scheduleCommandString = scheduleCommandString+aString
-                    print("executingscheduleCommandString, "COMMAND STRING IS RECOGNIZED")          
+                    print("Executing command: ", aString)          
         if timeIsSet:
             currentTime = time.process_time()+timeOffset+sleptTime
         else:
