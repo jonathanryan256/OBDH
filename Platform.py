@@ -90,6 +90,7 @@ def run_platform():
         print("start of loop")
         #Command scheduling
         scheduleCommandString = ""
+        command = ""
         for i in range(0,len(processStatus)): #running schuduled commands
             if processStatus[i]==1:
                 print("process " + str(i) + " waiting")

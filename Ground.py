@@ -53,6 +53,7 @@ def recv_TM_thread(gnd_socket):
         print(f"\n[GROUND] Error in receiving thread: {e}")
 
 def run_ground():
+    commandList = ["exit","payload take-image", "mode_status","set-mode safe","set-mode target","payload power-on","payload power-off","set_time","schedule_command"]
     print("[GROUND] Connecting to Platform OBC...")
     gnd_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -79,6 +80,9 @@ def run_ground():
         cmd = input("Ground-MCS> ").strip()
         if not cmd:
             continue
+        if cmd not in commandList:
+             reply = f"PF_TIM: REJECT - Unknown command: '{cmd}'. Nothing processed.\n"
+ 
         if cmd == "SET_TIME": #Current time needs to be sent to Platform
             cmd = cmd+str(time.mktime(time.localtime()))
         if cmd == "SCHEDULE_COMMAND":
