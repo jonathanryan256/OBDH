@@ -77,6 +77,7 @@ def run_ground():
     timeSet = False
     # MAIN Loop =========================================================================
     while True:
+        Send = True
         cmd = input("Ground-MCS> ").strip()
         if not cmd:
             continue
@@ -96,10 +97,14 @@ def run_ground():
                 cmd = cmd + "," +  scheduledCommand + "," + str(trgtTime)
             else:
                 print("TIME IS NOT SET YET, SET TIME BEFORE SCHEDULING")
+                Send = False
         full_cmd = f"{cmd}\n"
 
         try:
-            gnd_socket.sendall(full_cmd.encode('utf-8'))
+            if Send:
+                gnd_socket.sendall(full_cmd.encode('utf-8'))
+            else:
+                pass
         except:
             print("[GROUND] Could not send Command!")
             break
