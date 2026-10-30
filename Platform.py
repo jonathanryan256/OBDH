@@ -149,8 +149,8 @@ def run_platform():
             print("[PLATFORM] Shutdown signal received, Shutting Down...")
             pl_socket.sendall("exit".encode('utf-8'))
             break
-
-        print(f"[PLATFORM] Received from Ground -> '{command}'")
+        if command !="":
+            print(f"[PLATFORM] Received from Ground -> '{command}'")
 
 
         # =====================================================================================
