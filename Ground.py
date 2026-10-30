@@ -91,14 +91,18 @@ def run_ground():
         if cmd == "SCHEDULE_COMMAND":
             if timeSet:
                 scheduledCommand = input("Enter command to be Scheduled: ").strip()
-                scheduledTime = input("Enter scheduled time in hh:mm:ss: ").strip()
-                [hh,mm,ss] = scheduledTime.split(":")
-                try:
-                    trgtTime = generateTimeFromhhmmss(hh,mm,ss) #converts time to time since epoch
-                    cmd = cmd + "," +  scheduledCommand + "," + str(trgtTime)
-                except:
+                if scheduledCommand in commandList:
+                    scheduledTime = input("Enter scheduled time in hh:mm:ss: ").strip()
+                    [hh,mm,ss] = scheduledTime.split(":")
+                    try:
+                        trgtTime = generateTimeFromhhmmss(hh,mm,ss) #converts time to time since epoch
+                        cmd = cmd + "," +  scheduledCommand + "," + str(trgtTime)
+                    except:
+                        Send = False
+                        print("TIME INPUTTED INCORRECTLY")
+                else:
+                    print("INVALID COMMAND")
                     Send = False
-                    print("TIME INPUTTED INCORRECTLY")
             else:
                 print("TIME IS NOT SET YET, SET TIME BEFORE SCHEDULING")
                 Send = False
