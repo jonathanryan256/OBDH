@@ -53,7 +53,7 @@ def recv_TM_thread(gnd_socket):
         print(f"\n[GROUND] Error in receiving thread: {e}")
 
 def run_ground():
-    commandList = ["EXIT","PAYLOAD TAKE-IMAGE","SET MODE SAFE","SET MODE TARGET","PAYLOAD POWER-ON","PAYLOAD POWER-OFF","SET_TIME","SCHEDULE_COMMAND","REPORT_MODE"]
+    commandList = ["exit", "EXIT","PAYLOAD TAKE-IMAGE","SET MODE SAFE","SET MODE TARGET","PAYLOAD POWER-ON","PAYLOAD POWER-OFF","SET_TIME","SCHEDULE_COMMAND","REPORT_MODE"]
     print("[GROUND] Connecting to Platform OBC...")
     gnd_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
