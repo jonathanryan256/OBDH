@@ -16,8 +16,8 @@ index = 0
 index = 0 #initial process number for scheduling - can be 0-7
 def doAtTime(function,t):
     global currentTime
-    print(function)
-    print(t-currentTime,t,currentTime)
+    #print(function)
+    print(t-currentTime, function)
     if currentTime>=t:
         return function
     else:
@@ -87,20 +87,20 @@ def run_platform():
 
     # Run through command loop =============================================================
     while True:
-        print("start of loop")
+        #print("start of loop")
         #Command scheduling
         scheduleCommandString = ""
         command = ""
         for i in range(0,len(processStatus)): #running schuduled commands
             if processStatus[i]==1:
-                print("process " + str(i) + " waiting")
+                #print("process " + processFunction[i] + " waiting" + " on slot " ,str(i))
                 aString = doAtTime(processFunction[i],processTime[i])
                 if aString != "Waiting":
                     processFunction[i]=0
                     processStatus[i]=0
                     processTime[i]=0
                     scheduleCommandString = scheduleCommandString+aString
-                    print(scheduleCommandString, "COMMAND STRING IS RECOGNIZED")          
+                    print("executingscheduleCommandString, "COMMAND STRING IS RECOGNIZED")          
         if timeIsSet:
             currentTime = time.process_time()+timeOffset+sleptTime
         else:
@@ -164,7 +164,7 @@ def run_platform():
             timeOffset = localTime-time.process_time() #add offset and timeSlept to process_time to get current locat time in time since epoch
             timeIsSet = True
         if command == "REPORT_MODE" or "REPORT_MODE" in scheduleCommandString:
-            print('SOIDJFDO')
+            #print('SOIDJFDO')
             reply = f"PF_TM: STATUS - Current mode is [{current_mode}], (Payload is {payload_power})\n"
             gnd_conn.sendall(reply.encode('utf-8'))
 
@@ -230,6 +230,7 @@ def run_platform():
                 continue
 
             # When mode is not SAFE we continue with the payload commands.
+            sendCommand = ""
             if "POWER-ON" in command or "POWER-ON" in scheduleCommandString:
                 payload_power = "ON"
                 sendCommand = "PAYLOAD POWER-ON"
