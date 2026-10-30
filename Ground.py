@@ -53,7 +53,7 @@ def recv_TM_thread(gnd_socket):
         print(f"\n[GROUND] Error in receiving thread: {e}")
 
 def run_ground():
-    commandList = ["exit","payload take-image", "mode_status","set-mode safe","set-mode target","payload power-on","payload power-off","set_time","schedule_command","report_mode"]
+    commandList = ["exit","payload take-image","set mode safe","set mode target","payload power-on","payload power-off","set_time","schedule_command","report_mode"]
     print("[GROUND] Connecting to Platform OBC...")
     gnd_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -91,7 +91,7 @@ def run_ground():
         if cmd == "SCHEDULE_COMMAND":
             if timeSet:
                 scheduledCommand = input("Enter command to be Scheduled: ").strip()
-                if scheduledCommand in commandList:
+                if scheduledCommand.lower() in commandList:
                     scheduledTime = input("Enter scheduled time in hh:mm:ss: ").strip()
                     [hh,mm,ss] = scheduledTime.split(":")
                     try:

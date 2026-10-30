@@ -17,7 +17,7 @@ index = 0 #initial process number for scheduling - can be 0-7
 def doAtTime(function,t):
     global currentTime
     #print(function)
-    print(t-currentTime, function)
+    print(f"[PLATFORM] Scheduled '{function}' | Task timer: {t-currentTime:02f} seconds")
     if currentTime>=t:
         return function
     else:
@@ -163,6 +163,10 @@ def run_platform():
             sleptTime = 0 #Reset this, it is accounted for in "timeOffset" in the next line
             timeOffset = localTime-time.process_time() #add offset and timeSlept to process_time to get current locat time in time since epoch
             timeIsSet = True
+            # Confirm to ground that onboard true time has been set
+            init_reply = f"PF_TM: EVENT - Onboard clock set to true time.\n"
+            gnd_conn.sendall(init_reply.encode('utf-8'))
+
         if command == "REPORT_MODE" or "REPORT_MODE" in scheduleCommandString:
             #print('SOIDJFDO')
             reply = f"PF_TM: STATUS - Current mode is [{current_mode}], (Payload is {payload_power})\n"
@@ -179,12 +183,12 @@ def run_platform():
                     print(cmd + "Scheduled for ", str(trgtTime) + "current time is " + str(currentTime))
                     index = (index+1)%8 # index cycles through all indices and then resets back to zero
             else:
-                print("time is not set, cannont schedule")
+                print("[PLATFORM] Time is not set: Cannot schedule")
         # Swap-MODE Logic ===================================================================
-        if "SET-MODE" == command or "SET-MODE" in scheduleCommandString:
-            if "SET-MODE" in command:
-                new_mode = command.replace("SET-MODE ", "").upper()
-            elif "SET-MODE" in scheduleCommandString:
+        if "SET MODE" in command or "SET MODE" in scheduleCommandString:
+            if "SET MODE" in command:
+                new_mode = command.replace("SET MODE ", "").upper()
+            elif "SET MODE" in scheduleCommandString:
                 if "SAFE" in scheduleCommandString:
                     new_mode = "SAFE"
                 elif "TARGET" in scheduleCommandString:
@@ -207,12 +211,15 @@ def run_platform():
                     # Automatic shutdown of payload while switching to SAFE
                     if current_mode == "SAFE" and payload_power == "ON":
                         payload_power = "OFF"
+                        event_reply = f"PL_TM: EVENT - Payload automatically POWERED-OFF! SAFE mode was activated!\n"
+                        gnd_conn.sendall(event_reply.encode('utf-8'))
+
                         print(f"[PLATFORM] EVENT: Satellite switched to SAFE! -> Automatic shutdown of Payload.")
-                        pl_socket.sendall("SET-POWER OFF".encode('utf-8'))
+                        pl_socket.sendall("SET POWER-OFF".encode('utf-8'))
                         try: pl_socket.recv(1024) # Ignore response
                         except: pass
 
-                    reply = f"PF_TM: EVENT - Mode succesfully switched to {current_mode}\n"
+                    reply = f"PF_TM: EVENT - Mode succesfully switched to {current_mode}!\n"
                     gnd_conn.sendall(reply.encode('utf-8'))
                     continue
             
